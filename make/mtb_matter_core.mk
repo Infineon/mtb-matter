@@ -10,21 +10,29 @@
 # INCLUDES
 ################################################################################
 
+INCLUDES += $(SEARCH_matter)/examples/common/tracing
+
 ifeq ($(MATTER_PLATFORM),i15dot4)
 INCLUDES += $(SEARCH_matter)/examples/shell/shell_common         \
             $(SEARCH_matter)/examples/shell/shell_common/include
 endif
 
-INCLUDES += $(SEARCH_matter)/src                                  \
-            $(SEARCH_matter)/src/access                           \
-            $(SEARCH_matter)/src/access/examples                  \
-            $(SEARCH_matter)/src/app/MessageDef                   \
-            $(SEARCH_matter)/src/app/reporting                    \
-            $(SEARCH_matter)/src/app/server                       \
-            $(SEARCH_matter)/src/app/util                         \
-            $(SEARCH_matter)/src/ble                              \
-            $(SEARCH_matter)/src/controller                       \
-            $(SEARCH_matter)/src/credentials                      \
+INCLUDES += $(SEARCH_matter)/src                 \
+            $(SEARCH_matter)/src/access          \
+            $(SEARCH_matter)/src/access/examples \
+            $(SEARCH_matter)/src/app/MessageDef  \
+            $(SEARCH_matter)/src/app/icd         \
+            $(SEARCH_matter)/src/app/reporting   \
+            $(SEARCH_matter)/src/app/server      \
+            $(SEARCH_matter)/src/app/util        \
+            $(SEARCH_matter)/src/ble             \
+            $(SEARCH_matter)/src/controller
+
+ifeq ($(MATTER_PLATFORM),i15dot4)
+INCLUDES += $(SEARCH_matter)/src/controller/data_model
+endif
+
+INCLUDES += $(SEARCH_matter)/src/credentials                      \
             $(SEARCH_matter)/src/credentials/attestation_verifier \
             $(SEARCH_matter)/src/credentials/examples             \
             $(SEARCH_matter)/src/credentials/tests                \
@@ -45,7 +53,8 @@ INCLUDES += $(SEARCH_matter)/src/lib/dnssd/minimal_mdns            \
 endif
 
 ifeq ($(MATTER_PLATFORM),i15dot4)
-INCLUDES += $(SEARCH_matter)/src/lib/shell          \
+INCLUDES += $(SEARCH_matter)/src/lib/format         \
+            $(SEARCH_matter)/src/lib/shell          \
             $(SEARCH_matter)/src/lib/shell/commands
 endif
 
@@ -72,14 +81,22 @@ INCLUDES += $(SEARCH_matter)/src/platform/logging/impl/stdio           \
             $(SEARCH_matter)/src/protocols/user_directed_commissioning \
             $(SEARCH_matter)/src/setup_payload                         \
             $(SEARCH_matter)/src/system                                \
-            $(SEARCH_matter)/src/trace                                 \
+            $(SEARCH_matter)/src/tracing                               \
+            $(SEARCH_matter)/src/tracing/json                          \
             $(SEARCH_matter)/src/transport                             \
             $(SEARCH_matter)/src/transport/raw
 
 ifeq ($(MATTER_PLATFORM),i15dot4)
 INCLUDES += $(SEARCH_matter)/third_party/infineon/cyw30739_sdk/include \
-            $(SEARCH_matter)/third_party/infineon/cyw30739_sdk/src     \
-            $(SEARCH_matter)/third_party/jlink/segger_rtt/RTT
+            $(SEARCH_matter)/third_party/infineon/cyw30739_sdk/src
+endif
+
+ifeq ($(MATTER_PLATFORM),cat1)
+INCLUDES += $(SEARCH_matter)/third_party/infineon/psoc6
+endif
+
+ifeq ($(MATTER_PLATFORM),i15dot4)
+INCLUDES += $(SEARCH_matter)/third_party/jlink/segger_rtt/RTT
 endif
 
 INCLUDES += $(SEARCH_matter)/third_party/nlassert/repo/include \
@@ -92,10 +109,13 @@ INCLUDES += $(SEARCH_matter)/third_party/openthread/ot-ifx/src/cyw30739         
             $(SEARCH_matter)/third_party/openthread/ot-ifx/src/cyw30739/mbedtls/library
 endif
 
-INCLUDES += $(SEARCH_matter)/zzz_generated                                                \
-            $(SEARCH_matter)/zzz_generated/app-common                                     \
+INCLUDES += $(SEARCH_matter)/zzz_generated/app-common                                     \
             $(SEARCH_matter)/zzz_generated/app-common/app-common/zap-generated            \
             $(SEARCH_matter)/zzz_generated/app-common/app-common/zap-generated/attributes
+
+ifeq ($(MATTER_PLATFORM),i15dot4)
+INCLUDES += $(SEARCH_matter)/zzz_generated/controller-clusters
+endif
 
 
 ################################################################################
@@ -180,9 +200,16 @@ SOURCES += $(SEARCH_matter)/src/access/AccessControl.cpp                        
            $(SEARCH_matter)/src/app/StatusResponse.cpp                                                 \
            $(SEARCH_matter)/src/app/TimedHandler.cpp                                                   \
            $(SEARCH_matter)/src/app/TimedRequest.cpp                                                   \
+           $(SEARCH_matter)/src/app/TimerDelegates.cpp                                                 \
            $(SEARCH_matter)/src/app/WriteClient.cpp                                                    \
            $(SEARCH_matter)/src/app/WriteHandler.cpp                                                   \
+           $(SEARCH_matter)/src/app/icd/ICDManagementServer.cpp                                        \
+           $(SEARCH_matter)/src/app/icd/ICDManager.cpp                                                 \
+           $(SEARCH_matter)/src/app/icd/ICDMonitoringTable.cpp                                         \
+           $(SEARCH_matter)/src/app/icd/ICDNotifier.cpp                                                \
            $(SEARCH_matter)/src/app/reporting/Engine.cpp                                               \
+           $(SEARCH_matter)/src/app/reporting/ReportSchedulerImpl.cpp                                  \
+           $(SEARCH_matter)/src/app/reporting/SynchronizedReportSchedulerImpl.cpp                      \
            $(SEARCH_matter)/src/app/server/AclStorage.cpp                                              \
            $(SEARCH_matter)/src/app/server/CommissioningWindowManager.cpp                              \
            $(SEARCH_matter)/src/app/server/DefaultAclStorage.cpp                                       \
@@ -191,14 +218,11 @@ SOURCES += $(SEARCH_matter)/src/access/AccessControl.cpp                        
            $(SEARCH_matter)/src/app/server/OnboardingCodesUtil.cpp                                     \
            $(SEARCH_matter)/src/app/server/Server.cpp                                                  \
            $(SEARCH_matter)/src/app/util/DataModelHandler.cpp                                          \
-           $(SEARCH_matter)/src/app/util/af-event.cpp                                                  \
            $(SEARCH_matter)/src/app/util/attribute-size-util.cpp                                       \
            $(SEARCH_matter)/src/app/util/attribute-storage.cpp                                         \
            $(SEARCH_matter)/src/app/util/attribute-table.cpp                                           \
            $(SEARCH_matter)/src/app/util/binding-table.cpp                                             \
            $(SEARCH_matter)/src/app/util/ember-compatibility-functions.cpp                             \
-           $(SEARCH_matter)/src/app/util/ember-print.cpp                                               \
-           $(SEARCH_matter)/src/app/util/error-mapping.cpp                                             \
            $(SEARCH_matter)/src/app/util/generic-callback-stubs.cpp                                    \
            $(SEARCH_matter)/src/app/util/message.cpp                                                   \
            $(SEARCH_matter)/src/app/util/privilege-storage.cpp                                         \
@@ -208,18 +232,6 @@ SOURCES += $(SEARCH_matter)/src/access/AccessControl.cpp                        
            $(SEARCH_matter)/src/ble/BleLayer.cpp                                                       \
            $(SEARCH_matter)/src/ble/BleUUID.cpp                                                        \
            $(SEARCH_matter)/src/ble/BtpEngine.cpp                                                      \
-           $(SEARCH_matter)/src/controller/AbstractDnssdDiscoveryController.cpp                        \
-           $(SEARCH_matter)/src/controller/AutoCommissioner.cpp                                        \
-           $(SEARCH_matter)/src/controller/CHIPCommissionableNodeController.cpp                        \
-           $(SEARCH_matter)/src/controller/CHIPDeviceController.cpp                                    \
-           $(SEARCH_matter)/src/controller/CHIPDeviceControllerFactory.cpp                             \
-           $(SEARCH_matter)/src/controller/CommissioneeDeviceProxy.cpp                                 \
-           $(SEARCH_matter)/src/controller/CommissionerDiscoveryController.cpp                         \
-           $(SEARCH_matter)/src/controller/CommissioningDelegate.cpp                                   \
-           $(SEARCH_matter)/src/controller/CommissioningWindowOpener.cpp                               \
-           $(SEARCH_matter)/src/controller/EmptyDataModelHandler.cpp                                   \
-           $(SEARCH_matter)/src/controller/ExampleOperationalCredentialsIssuer.cpp                     \
-           $(SEARCH_matter)/src/controller/SetUpCodePairer.cpp                                         \
            $(SEARCH_matter)/src/credentials/CHIPCert.cpp                                               \
            $(SEARCH_matter)/src/credentials/CHIPCertFromX509.cpp                                       \
            $(SEARCH_matter)/src/credentials/CHIPCertToX509.cpp                                         \
@@ -234,21 +246,30 @@ SOURCES += $(SEARCH_matter)/src/access/AccessControl.cpp                        
            $(SEARCH_matter)/src/credentials/attestation_verifier/DacOnlyPartialAttestationVerifier.cpp \
            $(SEARCH_matter)/src/credentials/attestation_verifier/DefaultDeviceAttestationVerifier.cpp  \
            $(SEARCH_matter)/src/credentials/attestation_verifier/DeviceAttestationVerifier.cpp         \
+           $(SEARCH_matter)/src/credentials/attestation_verifier/TestPAAStore.cpp                      \
            $(SEARCH_matter)/src/credentials/examples/DeviceAttestationCredsExample.cpp                 \
            $(SEARCH_matter)/src/credentials/examples/ExampleDACs.cpp                                   \
            $(SEARCH_matter)/src/credentials/examples/ExamplePAI.cpp                                    \
            $(SEARCH_matter)/src/credentials/tests/CHIPAttCert_test_vectors.cpp                         \
            $(SEARCH_matter)/src/crypto/CHIPCryptoPAL.cpp                                               \
            $(SEARCH_matter)/src/crypto/CHIPCryptoPALmbedTLS.cpp                                        \
+           $(SEARCH_matter)/src/crypto/CHIPCryptoPALmbedTLSCert.cpp                                    \
            $(SEARCH_matter)/src/crypto/PersistentStorageOperationalKeystore.cpp                        \
            $(SEARCH_matter)/src/crypto/RandUtils.cpp                                                   \
-           $(SEARCH_matter)/src/inet/IPAddress-StringFuncts.cpp                                        \
-           $(SEARCH_matter)/src/inet/IPAddress.cpp                                                     \
-           $(SEARCH_matter)/src/inet/IPPacketInfo.cpp                                                  \
-           $(SEARCH_matter)/src/inet/IPPrefix.cpp                                                      \
-           $(SEARCH_matter)/src/inet/InetArgParser.cpp                                                 \
-           $(SEARCH_matter)/src/inet/InetError.cpp                                                     \
-           $(SEARCH_matter)/src/inet/InetInterface.cpp
+           $(SEARCH_matter)/src/crypto/RawKeySessionKeystore.cpp
+
+ifeq ($(MATTER_PLATFORM),cat1)
+SOURCES += $(SEARCH_matter)/src/inet/EndPointStateLwIP.cpp
+endif
+
+SOURCES += $(SEARCH_matter)/src/inet/IPAddress-StringFuncts.cpp   \
+           $(SEARCH_matter)/src/inet/IPAddress.cpp                \
+           $(SEARCH_matter)/src/inet/IPPacketInfo.cpp             \
+           $(SEARCH_matter)/src/inet/IPPrefix.cpp                 \
+           $(SEARCH_matter)/src/inet/InetArgParser.cpp            \
+           $(SEARCH_matter)/src/inet/InetError.cpp                \
+           $(SEARCH_matter)/src/inet/InetInterface.cpp            \
+           $(SEARCH_matter)/src/inet/InetInterfaceImplDefault.cpp
 
 ifeq ($(MATTER_PLATFORM),cat1)
 SOURCES += $(SEARCH_matter)/src/inet/TCPEndPoint.cpp         \
@@ -272,15 +293,17 @@ SOURCES += $(SEARCH_matter)/src/lib/address_resolve/AddressResolve.cpp          
            $(SEARCH_matter)/src/lib/asn1/ASN1Reader.cpp                            \
            $(SEARCH_matter)/src/lib/asn1/ASN1Time.cpp                              \
            $(SEARCH_matter)/src/lib/asn1/ASN1Writer.cpp                            \
-           $(SEARCH_matter)/src/lib/core/CHIPCircularTLVBuffer.cpp                 \
            $(SEARCH_matter)/src/lib/core/CHIPError.cpp                             \
            $(SEARCH_matter)/src/lib/core/CHIPKeyIds.cpp                            \
-           $(SEARCH_matter)/src/lib/core/CHIPTLVDebug.cpp                          \
-           $(SEARCH_matter)/src/lib/core/CHIPTLVReader.cpp                         \
-           $(SEARCH_matter)/src/lib/core/CHIPTLVUpdater.cpp                        \
-           $(SEARCH_matter)/src/lib/core/CHIPTLVUtilities.cpp                      \
-           $(SEARCH_matter)/src/lib/core/CHIPTLVWriter.cpp                         \
-           $(SEARCH_matter)/src/lib/core/OTAImageHeader.cpp
+           $(SEARCH_matter)/src/lib/core/ErrorStr.cpp                              \
+           $(SEARCH_matter)/src/lib/core/OTAImageHeader.cpp                        \
+           $(SEARCH_matter)/src/lib/core/TLVCircularBuffer.cpp                     \
+           $(SEARCH_matter)/src/lib/core/TLVDebug.cpp                              \
+           $(SEARCH_matter)/src/lib/core/TLVReader.cpp                             \
+           $(SEARCH_matter)/src/lib/core/TLVTags.cpp                               \
+           $(SEARCH_matter)/src/lib/core/TLVUpdater.cpp                            \
+           $(SEARCH_matter)/src/lib/core/TLVUtilities.cpp                          \
+           $(SEARCH_matter)/src/lib/core/TLVWriter.cpp
 
 ifeq ($(MATTER_PLATFORM),cat1)
 SOURCES += $(SEARCH_matter)/src/lib/dnssd/ActiveResolveAttempts.cpp      \
@@ -319,7 +342,8 @@ SOURCES += $(SEARCH_matter)/src/lib/dnssd/minimal_mdns/AddressPolicy.cpp        
 endif
 
 ifeq ($(MATTER_PLATFORM),i15dot4)
-SOURCES += $(SEARCH_matter)/src/lib/shell/Engine.cpp                   \
+SOURCES += $(SEARCH_matter)/src/lib/format/protocol_decoder.cpp        \
+           $(SEARCH_matter)/src/lib/shell/Engine.cpp                   \
            $(SEARCH_matter)/src/lib/shell/MainLoopCYW30739.cpp         \
            $(SEARCH_matter)/src/lib/shell/commands/BLE.cpp             \
            $(SEARCH_matter)/src/lib/shell/commands/Base64.cpp          \
@@ -330,6 +354,7 @@ SOURCES += $(SEARCH_matter)/src/lib/shell/Engine.cpp                   \
            $(SEARCH_matter)/src/lib/shell/commands/Meta.cpp            \
            $(SEARCH_matter)/src/lib/shell/commands/OnboardingCodes.cpp \
            $(SEARCH_matter)/src/lib/shell/commands/Ota.cpp             \
+           $(SEARCH_matter)/src/lib/shell/commands/Stat.cpp            \
            $(SEARCH_matter)/src/lib/shell/streamer.cpp                 \
            $(SEARCH_matter)/src/lib/shell/streamer_cyw30739.cpp
 endif
@@ -343,7 +368,6 @@ SOURCES += $(SEARCH_matter)/src/lib/support/Base64.cpp                      \
            $(SEARCH_matter)/src/lib/support/CHIPMem-Malloc.cpp              \
            $(SEARCH_matter)/src/lib/support/CHIPMem.cpp                     \
            $(SEARCH_matter)/src/lib/support/CHIPPlatformMemory.cpp          \
-           $(SEARCH_matter)/src/lib/support/ErrorStr.cpp                    \
            $(SEARCH_matter)/src/lib/support/FibonacciUtils.cpp              \
            $(SEARCH_matter)/src/lib/support/FixedBufferAllocator.cpp        \
            $(SEARCH_matter)/src/lib/support/IniEscaping.cpp                 \
@@ -351,17 +375,16 @@ SOURCES += $(SEARCH_matter)/src/lib/support/Base64.cpp                      \
            $(SEARCH_matter)/src/lib/support/Pool.cpp                        \
            $(SEARCH_matter)/src/lib/support/PrivateHeap.cpp                 \
            $(SEARCH_matter)/src/lib/support/SerializableIntegerSet.cpp      \
+           $(SEARCH_matter)/src/lib/support/StringBuilder.cpp               \
            $(SEARCH_matter)/src/lib/support/ThreadOperationalDataset.cpp    \
            $(SEARCH_matter)/src/lib/support/TimeUtils.cpp                   \
            $(SEARCH_matter)/src/lib/support/UnitTestRegistration.cpp        \
            $(SEARCH_matter)/src/lib/support/UnitTestUtils.cpp               \
            $(SEARCH_matter)/src/lib/support/ZclString.cpp                   \
-           $(SEARCH_matter)/src/lib/support/logging/CHIPLogging.cpp         \
+           $(SEARCH_matter)/src/lib/support/logging/BinaryLogging.cpp       \
+           $(SEARCH_matter)/src/lib/support/logging/TextOnlyLogging.cpp     \
            $(SEARCH_matter)/src/lib/support/verhoeff/Verhoeff.cpp           \
            $(SEARCH_matter)/src/lib/support/verhoeff/Verhoeff10.cpp         \
-           $(SEARCH_matter)/src/lib/support/verhoeff/Verhoeff16.cpp         \
-           $(SEARCH_matter)/src/lib/support/verhoeff/Verhoeff32.cpp         \
-           $(SEARCH_matter)/src/lib/support/verhoeff/Verhoeff36.cpp         \
            $(SEARCH_matter)/src/messaging/ApplicationExchangeDispatch.cpp   \
            $(SEARCH_matter)/src/messaging/ErrorCategory.cpp                 \
            $(SEARCH_matter)/src/messaging/ExchangeContext.cpp               \
@@ -383,12 +406,15 @@ SOURCES += $(SEARCH_matter)/src/lib/support/Base64.cpp                      \
 ifeq ($(MATTER_PLATFORM),i15dot4)
 SOURCES += $(SEARCH_matter)/src/platform/OpenThread/DnssdImpl.cpp                               \
            $(SEARCH_matter)/src/platform/OpenThread/GenericNetworkCommissioningThreadDriver.cpp \
+           $(SEARCH_matter)/src/platform/OpenThread/OpenThreadDnssdImpl.cpp                     \
            $(SEARCH_matter)/src/platform/OpenThread/OpenThreadUtils.cpp
 endif
 
 SOURCES += $(SEARCH_matter)/src/platform/PersistedStorage.cpp                                             \
            $(SEARCH_matter)/src/platform/PlatformEventSupport.cpp                                         \
+           $(SEARCH_matter)/src/platform/RuntimeOptionsProvider.cpp                                       \
            $(SEARCH_matter)/src/platform/SingletonConfigurationManager.cpp                                \
+           $(SEARCH_matter)/src/platform/SyscallStubs.cpp                                                 \
            $(SEARCH_matter)/src/protocols/Protocols.cpp                                                   \
            $(SEARCH_matter)/src/protocols/bdx/BdxMessages.cpp                                             \
            $(SEARCH_matter)/src/protocols/bdx/BdxTransferSession.cpp                                      \
@@ -400,6 +426,7 @@ SOURCES += $(SEARCH_matter)/src/platform/PersistedStorage.cpp                   
            $(SEARCH_matter)/src/protocols/secure_channel/CASEDestinationId.cpp                            \
            $(SEARCH_matter)/src/protocols/secure_channel/CASEServer.cpp                                   \
            $(SEARCH_matter)/src/protocols/secure_channel/CASESession.cpp                                  \
+           $(SEARCH_matter)/src/protocols/secure_channel/CheckinMessage.cpp                               \
            $(SEARCH_matter)/src/protocols/secure_channel/DefaultSessionResumptionStorage.cpp              \
            $(SEARCH_matter)/src/protocols/secure_channel/MessageCounterManager.cpp                        \
            $(SEARCH_matter)/src/protocols/secure_channel/PASESession.cpp                                  \
@@ -430,14 +457,13 @@ SOURCES += $(SEARCH_matter)/src/platform/PersistedStorage.cpp                   
            $(SEARCH_matter)/src/system/SystemTimer.cpp                                                    \
            $(SEARCH_matter)/src/system/TLVPacketBufferBackingStore.cpp                                    \
            $(SEARCH_matter)/src/system/WakeEvent.cpp                                                      \
-           $(SEARCH_matter)/src/trace/trace.cpp                                                           \
+           $(SEARCH_matter)/src/tracing/registry.cpp                                                      \
            $(SEARCH_matter)/src/transport/CryptoContext.cpp                                               \
            $(SEARCH_matter)/src/transport/GroupPeerMessageCounter.cpp                                     \
            $(SEARCH_matter)/src/transport/SecureMessageCodec.cpp                                          \
            $(SEARCH_matter)/src/transport/SecureSession.cpp                                               \
            $(SEARCH_matter)/src/transport/SecureSessionTable.cpp                                          \
            $(SEARCH_matter)/src/transport/Session.cpp                                                     \
-           $(SEARCH_matter)/src/transport/SessionHandle.cpp                                               \
            $(SEARCH_matter)/src/transport/SessionHolder.cpp                                               \
            $(SEARCH_matter)/src/transport/SessionManager.cpp                                              \
            $(SEARCH_matter)/src/transport/TransportMgrBase.cpp                                            \

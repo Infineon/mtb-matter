@@ -17,6 +17,8 @@ endif
 DEFINES += CHIP_MINMDNS_DEFAULT_POLICY=1             \
            CHIP_MINMDNS_HIGH_VERBOSITY=0             \
            CHIP_MINMDNS_USE_EPHEMERAL_UNICAST_PORT=0 \
+           JSON_USE_EXCEPTION=0                      \
+           JSON_USE_NULLREF=0                        \
            P6_LOG_ENABLED=1                          \
            PSOC_062_2M
 

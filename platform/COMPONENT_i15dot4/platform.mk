@@ -16,6 +16,8 @@ endif
 
 DEFINES += CHIP_SHELL_ENABLE_CMD_SERVER=false                       \
            ENABLE_CHIP_SHELL                                        \
+           JSON_USE_EXCEPTION=0                                     \
+           JSON_USE_NULLREF=0                                       \
            OPENTHREAD_CONFIG_CLI_TRANSPORT=OT_CLI_TRANSPORT_CONSOLE \
            OPENTHREAD_CONFIG_ENABLE_BUILTIN_MBEDTLS=0               \
            SPINEL_PLATFORM_HEADER=\<spinel_platform.h\>             \
